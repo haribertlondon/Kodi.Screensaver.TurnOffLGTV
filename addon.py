@@ -13,6 +13,7 @@ import xbmcaddon
 import xbmc
 import time
 import json
+import time
 import urllib2
 import threading
 import os
@@ -409,6 +410,17 @@ class LGTVNetworkShutdown2011(WebSocketClient):
             xbmc_log.log("Unable to read pairing key", xbmc.LOGERROR)
         return key
 
+    def check_connection_loop(self, ip_address):
+        result = False
+        for ii in range(1,5): #some retrys with delay
+            result = check_connection(self, ip_address)
+            if not result:
+                xbmc_log.log("Connection could not established. Waiting some seconds...")
+                time.sleep(5)
+            else:
+                break
+        return result
+
     def check_connection(self, ip_address):
         try:
             self.sessionID = ""
@@ -435,7 +447,10 @@ class LGTVNetworkShutdown2011(WebSocketClient):
                 return False
         except urllib2.URLError as err:
             Dialog.notification("LG TV 2011","Connection failed. Maybe IP or type is incorrect?")
-            xbmc_log.log("Check failed, URLError")
+            try:
+                xbmc_log.log("Check failed, URLError"+str(err))
+            except:
+                xbmc_log.log("Check failed, URLError")
         return False
 
     def getSessionString(self, responseStr):
@@ -520,7 +535,7 @@ class LGTVNetworkShutdown2011(WebSocketClient):
             return False
 
     def __init__(self, ip_address):
-        if self.check_connection(ip_address) == True:
+        if self.check_connection_loop(ip_address) == True:
             if self.check_registration(ip_address) == True:
                 if self.send_turn_off_command(ip_address) == True:
                     xbmc_log.log("Successfully sent PWR_OFF")

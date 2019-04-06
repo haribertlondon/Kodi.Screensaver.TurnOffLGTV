@@ -413,11 +413,12 @@ class LGTVNetworkShutdown2011(WebSocketClient):
     def check_connection_loop(self, ip_address):
         result = False
         for ii in range(1,5): #some retrys with delay
-            result = check_connection(self, ip_address)
+            result = self.check_connection(ip_address)
             if not result:
                 xbmc_log.log("Connection could not established. Waiting some seconds...")
                 time.sleep(5)
             else:
+                xbmc_log.log("Connection found.")
                 break
         return result
 
